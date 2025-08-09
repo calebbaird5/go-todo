@@ -2,40 +2,39 @@ package commands
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"os"
 	"time"
 	"todo/models"
 	"todo/utils"
 
-	"github.com/urfave/cli/v3"
+	"github.com/spf13/cobra"
 )
 
-func Add(ctx context.Context, cmd *cli.Command) error {
-	taskDescription := cmd.Args().Get(0)
-
-	// if the task was not provided prompt for it now allow multi words
+func Add(cmd *cobra.Command, args []string) {
+	taskDescription := ""
+	if len(args) > 0 {
+		taskDescription = args[0]
+	}
 	if taskDescription == "" {
 		fmt.Print("Enter task description: ")
 		reader := bufio.NewReader(os.Stdin)
 		input, err := reader.ReadString('\n')
 		if err != nil {
-			return fmt.Errorf("failed to read input: %w", err)
+			fmt.Printf("failed to read input: %v\n", err)
+			return
 		}
-		taskDescription = input[:len(input)-1] // Remove the newline character
+		taskDescription = input[:len(input)-1]
 	}
-
 	task := models.Task{
 		Description: taskDescription,
 		CreatedAt:   time.Now(),
 	}
-
 	tasks, err := utils.LoadTasks()
 	if err != nil {
-		return fmt.Errorf("failed to load tasks: %w", err)
+		fmt.Printf("failed to load tasks: %v\n", err)
+		return
 	}
-
 	// Append the new task
 	existingTask := false
 	for _, t := range tasks {
@@ -48,7 +47,7 @@ func Add(ctx context.Context, cmd *cli.Command) error {
 	// make sure the task does not already exist
 	if existingTask {
 		fmt.Println("Task already exists:", taskDescription)
-		return nil
+		return
 	}
 
 	// Add the new task to the list and save the new task list
@@ -57,5 +56,5 @@ func Add(ctx context.Context, cmd *cli.Command) error {
 
 	fmt.Println("Added task:", taskDescription)
 	// Write tasks back to file
-	return nil
+	return
 }

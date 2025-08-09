@@ -1,22 +1,19 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"todo/utils"
 
-	"github.com/urfave/cli/v3"
+	"github.com/spf13/cobra"
 )
 
-func List(ctx context.Context, cmd *cli.Command) error {
+func List(cmd *cobra.Command, args []string) {
 	tasks, err := utils.LoadTasks()
 	if err != nil {
-		return fmt.Errorf("failed to load task to list: %w", err)
+		fmt.Printf("failed to load task to list: %v\n", err)
+		return
 	}
-
 	for _, task := range tasks {
 		fmt.Printf(" - %s\n", task.Description)
 	}
-
-	return nil
 }
